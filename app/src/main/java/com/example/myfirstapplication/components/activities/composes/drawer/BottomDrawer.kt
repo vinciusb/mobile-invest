@@ -7,11 +7,15 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +45,9 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
@@ -48,10 +56,7 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
 
     if (drawerState.isVisible) {
         val view = LocalView.current
-        val insets = view.rootWindowInsets
-
-        val bottomInset = insets?.getInsets(WindowInsets.Type.systemBars())?.bottom ?: 0
-
+        val bottomInset = view.rootWindowInsets?.getInsets(WindowInsets.Type.systemBars())?.bottom ?: 0
         val screenHeight = view.height
         val screenWidth = view.width
 
@@ -59,9 +64,16 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
         var contentHeight by remember { mutableIntStateOf(0) }
         val animatedOffset by animateIntAsState(
             targetValue = if (isFolded) 0 else contentHeight,
-            animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing),
-            label = "offset"
+            animationSpec = tween(durationMillis = 700, easing = LinearOutSlowInEasing),
+            label = "offset",
+            finishedListener = { value ->
+                if (value == 0) {
+                    drawerViewModel.setInvisible()
+                }
+            }
         )
+
+        var dragOffset by remember { mutableFloatStateOf(0.0f) }
 
         LaunchedEffect(contentHeight) {
             if (contentHeight > 0 && isFolded) {
@@ -70,11 +82,21 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
         }
 
         Layout(
-            modifier = Modifier.wrapContentHeight(),
+            modifier = Modifier
+                .wrapContentHeight()
+                .offset { IntOffset(0, dragOffset.roundToInt()) },
             content = {
                 BottomDrawerContent(
                     drawerState,
-                    bottomInset
+                    bottomInset,
+                    { delta -> dragOffset = max(dragOffset + delta, 0f) },
+                    {
+                        if (dragOffset >= 0.6 * contentHeight) {
+                            isFolded = true
+                        } else {
+                            dragOffset = 0f
+                        }
+                    }
                 )
             }) { measurables, constraints ->
             val placeables = measurables.map { it.measure(constraints) }
@@ -88,7 +110,12 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
 }
 
 @Composable
-inline fun BottomDrawerContent(drawerState: DrawerState, bottomPadding: Int) {
+inline fun BottomDrawerContent(
+    drawerState: DrawerState,
+    bottomPadding: Int,
+    crossinline updateOffset: (Float) -> Unit,
+    crossinline onDragEnd: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
@@ -98,12 +125,16 @@ inline fun BottomDrawerContent(drawerState: DrawerState, bottomPadding: Int) {
                 shape = RoundedCornerShape(topEnd = 10.dp, topStart = 10.dp)
             )
             .padding(10.dp, 12.dp, 10.dp, bottomPadding.dp + 15.dp)
-            .fillMaxWidth()
-    ) {
+            .fillMaxWidth(),
+        ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.8f)
-                .height(4.dp),
+                .height(4.dp)
+                .draggable(orientation = Orientation.Vertical,
+                    state = rememberDraggableState { delta -> updateOffset(delta) },
+                    onDragStopped = { onDragEnd() }
+                ),
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.primary
         ) {}

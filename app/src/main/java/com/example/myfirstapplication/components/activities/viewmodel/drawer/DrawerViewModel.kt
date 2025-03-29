@@ -16,7 +16,7 @@ class DrawerViewModel(private val initState: DrawerState) : ViewModel() {
         _state.value = _state.value.copy(isVisible = true, renderFun = renderFun)
     }
 
-    fun unsetVisible() {
+    fun setInvisible() {
         _state.value = _state.value.copy(isVisible = false)
     }
 
