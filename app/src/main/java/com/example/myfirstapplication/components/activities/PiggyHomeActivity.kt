@@ -47,6 +47,8 @@ class PiggyHomeActivity : ComponentActivity() {
             intent.getStringExtra(Intent.EXTRA_TEXT) ?: "Olá, eu sou o seu porquinho!"
 
         setContent {
+            val drawerViewModel: DrawerViewModel = koinInject()
+
             TemaPersonalizado(darkTheme = true) {
                 Surface(
                     color = MaterialTheme.colorScheme.background,
@@ -59,6 +61,7 @@ class PiggyHomeActivity : ComponentActivity() {
                     ) { paddingValues ->
                         PiggyHome(paddingValues, mensagemMotorSegmentacao)
                     }
+                    BottomDrawer(drawerViewModel)
                 }
             }
         }
@@ -85,7 +88,6 @@ class PiggyHomeActivity : ComponentActivity() {
             Spacer(Modifier.height(30.dp))
             PiggyAbout()
         }
-        BottomDrawer(drawerViewModel)
     }
 
     @Preview
@@ -119,6 +121,7 @@ class PiggyHomeActivity : ComponentActivity() {
                             drawerViewModel
                         )
                     }
+                    BottomDrawer(drawerViewModel)
                 }
             }
         }
