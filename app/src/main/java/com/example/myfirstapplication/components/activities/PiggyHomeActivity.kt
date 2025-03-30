@@ -1,10 +1,12 @@
 package com.example.myfirstapplication.components.activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +14,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -71,9 +77,17 @@ class PiggyHomeActivity : ComponentActivity() {
     fun PiggyHome(
         paddingValues: PaddingValues = PaddingValues(20.dp),
         mensagemMotorSegmentacao: String,
-        piggyViewModel: PiggyViewModel = koinViewModel(),
-        drawerViewModel: DrawerViewModel = koinInject()
+        piggyViewModel: PiggyViewModel = koinViewModel()
     ) {
+        val context = LocalContext.current as? Activity
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Go back",
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .size(37.dp)
+                .clickable { context?.finish() }
+        )
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -117,8 +131,7 @@ class PiggyHomeActivity : ComponentActivity() {
                         PiggyHome(
                             paddingValues,
                             "Olá, eu sou o seu porquinho!",
-                            piggyViewModel,
-                            drawerViewModel
+                            piggyViewModel
                         )
                     }
                     BottomDrawer(drawerViewModel)
