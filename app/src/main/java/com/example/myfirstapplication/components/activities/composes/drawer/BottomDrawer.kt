@@ -45,6 +45,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.max
@@ -73,7 +74,7 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
         var contentHeight by remember { mutableIntStateOf(0) }
         val animatedOffset by animateIntAsState(
             targetValue = if (isFolded) 0 else contentHeight,
-            animationSpec = tween(durationMillis = 700, easing = LinearOutSlowInEasing),
+            animationSpec = tween(durationMillis = 400, easing = LinearOutSlowInEasing),
             label = "offset",
             finishedListener = { value ->
                 if (value == 0) {
@@ -87,7 +88,7 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
         var dragOffset by remember { mutableFloatStateOf(0.0f) }
         val animatedDragOffset by animateFloatAsState(
             targetValue = if (isDragging) dragOffset else 0.0f,
-            animationSpec = tween(durationMillis = 700, easing = LinearOutSlowInEasing),
+            animationSpec = tween(durationMillis = 400, easing = LinearOutSlowInEasing),
             label = "offset"
         )
 
@@ -154,7 +155,7 @@ inline fun BottomDrawerContent(
                 color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(topEnd = 10.dp, topStart = 10.dp)
             )
-            .padding(10.dp, 12.dp, 10.dp, bottomPadding.dp + 15.dp)
+            .padding(10.dp, 12.dp, 10.dp, bottomPadding.pxToDp())
             .fillMaxWidth(),
     ) {
         Surface(
@@ -169,7 +170,7 @@ inline fun BottomDrawerContent(
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.primary
         ) {}
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         content()
     }
 }
@@ -202,3 +203,6 @@ inline fun PreviewContent() {
         Text("Linha 4")
     }
 }
+
+@Composable
+fun Int.pxToDp() = with(LocalDensity.current) { this@pxToDp.toDp() }

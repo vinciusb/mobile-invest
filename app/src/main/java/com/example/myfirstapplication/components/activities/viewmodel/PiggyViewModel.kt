@@ -2,6 +2,7 @@ package com.example.myfirstapplication.components.activities.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.myfirstapplication.model.Saldo
+import com.example.myfirstapplication.model.TipoSaldo
 import com.example.myfirstapplication.repository.SaldoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,8 +15,8 @@ class PiggyViewModel(saldoRepository: SaldoRepository) : ViewModel() {
         _saldoRepository.alterarVisibilidade()
     }
 
-    fun deposita(quantia: Double): Unit {
-//        _saldoRepository.deposita(quantia, tipoSaldo)
+    fun deposita(quantia: Double, tipoSaldo: TipoSaldo): Unit {
+        _saldoRepository.deposita(quantia, tipoSaldo)
     }
 
     fun saca(quantia: Double): Boolean {
