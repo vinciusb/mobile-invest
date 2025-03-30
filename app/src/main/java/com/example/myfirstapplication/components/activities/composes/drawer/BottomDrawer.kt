@@ -4,6 +4,7 @@ import android.os.Build
 import android.view.WindowInsets
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -82,7 +83,13 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
             }
         )
 
+        var isDragging by remember { mutableStateOf(false) }
         var dragOffset by remember { mutableFloatStateOf(0.0f) }
+        val animatedDragOffset by animateFloatAsState(
+            targetValue = if (isDragging) dragOffset else 0.0f,
+            animationSpec = tween(durationMillis = 700, easing = LinearOutSlowInEasing),
+            label = "offset"
+        )
 
         LaunchedEffect(contentHeight) {
             if (contentHeight > 0 && isFolded) {
@@ -99,17 +106,24 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
         Layout(
             modifier = Modifier
                 .wrapContentHeight()
-                .offset { IntOffset(0, dragOffset.roundToInt()) },
+                .offset {
+                    val currentOffset = if (isDragging) dragOffset else animatedDragOffset
+                    IntOffset(0, currentOffset.roundToInt())
+                },
             content = {
                 BottomDrawerContent(
                     drawerState.renderFun,
                     bottomInset,
                     { delta -> dragOffset = max(dragOffset + delta, 0f) },
                     {
+                        isDragging = true
+                    },
+                    {
                         if (dragOffset >= 0.6 * contentHeight) {
                             isFolded = true
                         } else {
                             dragOffset = 0f
+                            isDragging = false
                         }
                     }
                 )
@@ -129,6 +143,7 @@ inline fun BottomDrawerContent(
     content: @Composable () -> Unit,
     bottomPadding: Int,
     crossinline updateOffset: (Float) -> Unit,
+    crossinline onDragStart: () -> Unit,
     crossinline onDragEnd: () -> Unit
 ) {
     Column(
@@ -148,6 +163,7 @@ inline fun BottomDrawerContent(
                 .height(4.dp)
                 .draggable(orientation = Orientation.Vertical,
                     state = rememberDraggableState { delta -> updateOffset(delta) },
+                    onDragStarted = { onDragStart() },
                     onDragStopped = { onDragEnd() }
                 ),
             shape = RoundedCornerShape(8.dp),
