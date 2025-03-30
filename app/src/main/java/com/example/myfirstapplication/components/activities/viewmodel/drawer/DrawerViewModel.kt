@@ -12,12 +12,12 @@ class DrawerViewModel(private val initState: DrawerState) : ViewModel() {
     private val _state = MutableStateFlow<DrawerState>(initState)
     var drawerState: StateFlow<DrawerState> = _state.asStateFlow();
 
-    fun setVisible(renderFun: @Composable () -> Unit) {
-        _state.value = _state.value.copy(isVisible = true, renderFun = renderFun)
+    fun enable(renderFun: @Composable () -> Unit) {
+        _state.value = _state.value.copy(isEnabled = true, renderFun = renderFun)
     }
 
-    fun setInvisible() {
-        _state.value = _state.value.copy(isVisible = false)
+    fun disable() {
+        _state.value = _state.value.copy(isEnabled = false)
     }
 
 }

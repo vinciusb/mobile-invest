@@ -53,10 +53,18 @@ import kotlin.math.roundToInt
 @Composable
 inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
     val drawerState by drawerViewModel.drawerState.collectAsState()
+    var isShowing by remember { mutableStateOf(false) }
 
-    if (drawerState.isVisible) {
+    LaunchedEffect(drawerState.isEnabled) {
+        if (drawerState.isEnabled) {
+            isShowing = true
+        }
+    }
+
+    if (isShowing) {
         val view = LocalView.current
-        val bottomInset = view.rootWindowInsets?.getInsets(WindowInsets.Type.systemBars())?.bottom ?: 0
+        val bottomInset =
+            view.rootWindowInsets?.getInsets(WindowInsets.Type.systemBars())?.bottom ?: 0
         val screenHeight = view.height
         val screenWidth = view.width
 
@@ -68,7 +76,8 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
             label = "offset",
             finishedListener = { value ->
                 if (value == 0) {
-                    drawerViewModel.setInvisible()
+                    drawerViewModel.disable()
+                    isShowing = false
                 }
             }
         )
@@ -81,13 +90,19 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
             }
         }
 
+        LaunchedEffect(drawerState.isEnabled) {
+            if (!drawerState.isEnabled) {
+                isFolded = true
+            }
+        }
+
         Layout(
             modifier = Modifier
                 .wrapContentHeight()
                 .offset { IntOffset(0, dragOffset.roundToInt()) },
             content = {
                 BottomDrawerContent(
-                    drawerState,
+                    drawerState.renderFun,
                     bottomInset,
                     { delta -> dragOffset = max(dragOffset + delta, 0f) },
                     {
@@ -111,7 +126,7 @@ inline fun BottomDrawer(drawerViewModel: DrawerViewModel = koinInject()) {
 
 @Composable
 inline fun BottomDrawerContent(
-    drawerState: DrawerState,
+    content: @Composable () -> Unit,
     bottomPadding: Int,
     crossinline updateOffset: (Float) -> Unit,
     crossinline onDragEnd: () -> Unit
@@ -126,7 +141,7 @@ inline fun BottomDrawerContent(
             )
             .padding(10.dp, 12.dp, 10.dp, bottomPadding.dp + 15.dp)
             .fillMaxWidth(),
-        ) {
+    ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.8f)
@@ -139,7 +154,7 @@ inline fun BottomDrawerContent(
             color = MaterialTheme.colorScheme.primary
         ) {}
         Spacer(modifier = Modifier.height(8.dp))
-        drawerState.renderFun()
+        content()
     }
 }
 
