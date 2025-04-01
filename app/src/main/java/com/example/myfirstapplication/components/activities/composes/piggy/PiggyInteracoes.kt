@@ -44,7 +44,12 @@ inline fun PiggyInteracoes(
             contentPadding = PaddingValues(6.dp),
             shape = RoundedCornerShape(12.dp),
             onClick = {
-                drawerViewModel.enable { guardarDinheiro(piggyViewModel, drawerViewModel) }
+                drawerViewModel.enable {
+                    drawerKeyboard(piggyViewModel, drawerViewModel, "Aplicar", { saldo ->
+                        piggyViewModel.deposita(saldo.saldos[TipoSaldo.Piggy]!!, TipoSaldo.Piggy)
+                        drawerViewModel.disable()
+                    })
+                }
             }) {
             Text(
                 "Guardar Dinheiro",
@@ -57,6 +62,12 @@ inline fun PiggyInteracoes(
             colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
             contentPadding = PaddingValues(6.dp),
             onClick = {
+                drawerViewModel.enable {
+                    drawerKeyboard(piggyViewModel, drawerViewModel, "Sacar", { saldo ->
+                        piggyViewModel.saca(saldo.saldos[TipoSaldo.Piggy]!!, TipoSaldo.Piggy)
+                        drawerViewModel.disable()
+                    })
+                }
             }) {
             Text(
                 "Resgatar",
@@ -69,9 +80,11 @@ inline fun PiggyInteracoes(
 }
 
 @Composable
-inline fun guardarDinheiro(
+inline fun drawerKeyboard(
     piggyViewModel: PiggyViewModel,
     drawerViewModel: DrawerViewModel,
+    onSuccesText: String,
+    crossinline onSuccess: (Saldo) -> Unit,
     initSaldo: Saldo = koinInject<Saldo>()
 ) {
     var saldo = remember { mutableStateOf(initSaldo.copy()) }
@@ -117,11 +130,10 @@ inline fun guardarDinheiro(
                 modifier = buttonModifier,
                 shape = RoundedCornerShape(12.dp),
                 onClick = {
-                    piggyViewModel.deposita(saldo.value.saldos[TipoSaldo.Piggy]!!, TipoSaldo.Piggy)
-                    drawerViewModel.disable()
+                    onSuccess(saldo.value)
                 }) {
                 Text(
-                    "Aplicar",
+                    onSuccesText,
                     fontSize = 18.sp
                 )
             }
@@ -153,6 +165,6 @@ inline fun previewGuardarDinheiro() {
     }) {
         val piggyViewModel = PiggyViewModel(koinInject())
         val drawerViewModel = DrawerViewModel(koinInject())
-        guardarDinheiro(piggyViewModel, drawerViewModel)
+        drawerKeyboard(piggyViewModel, drawerViewModel, "Aplicar", {})
     }
 }

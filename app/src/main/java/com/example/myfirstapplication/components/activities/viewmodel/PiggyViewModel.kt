@@ -19,8 +19,8 @@ class PiggyViewModel(saldoRepository: SaldoRepository) : ViewModel() {
         _saldoRepository.deposita(quantia, tipoSaldo)
     }
 
-    fun saca(quantia: Double): Boolean {
-//        return _saldoRepository.saca(quantia)
+    fun saca(quantia: Double, tipoSaldo: TipoSaldo): Boolean {
+        return _saldoRepository.saca(quantia,  tipoSaldo)
         return true
     }
 

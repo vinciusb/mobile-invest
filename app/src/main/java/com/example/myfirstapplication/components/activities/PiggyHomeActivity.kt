@@ -99,7 +99,7 @@ class PiggyHomeActivity : ComponentActivity() {
             PiggySaldo(piggyViewModel)
             Spacer(Modifier.height(12.dp))
             PiggyInteracoes(piggyViewModel)
-            Spacer(Modifier.height(30.dp))
+            Spacer(modifier = Modifier.weight(1f))
             PiggyAbout()
         }
     }
