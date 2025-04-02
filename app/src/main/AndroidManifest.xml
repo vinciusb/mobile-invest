@@ -33,6 +33,15 @@
                 <action android:name="android.intent.action.SEND" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".components.activities.HomeBrokerActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.MyFirstApplication">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
