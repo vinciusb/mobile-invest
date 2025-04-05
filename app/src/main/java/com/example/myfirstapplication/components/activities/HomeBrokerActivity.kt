@@ -5,8 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,6 +35,7 @@ class HomeBrokerActivity() : ComponentActivity() {
 
         val tokenAcao = intent.getStringExtra(Intent.EXTRA_TEXT) ?: "INTR"
 
+
         setContent {
             TemaPersonalizado(darkTheme = true) {
                 Surface(
@@ -56,7 +59,9 @@ class HomeBrokerActivity() : ComponentActivity() {
         paddingValues: PaddingValues = PaddingValues(20.dp),
         homeBrokerViewModel: HomeBrokerViewModel = koinInject()
     ) {
-        HomeBrokerGraph()
+        Box(Modifier.height(500.dp)) {
+            HomeBrokerGraph()
+        }
     }
 
     @Preview

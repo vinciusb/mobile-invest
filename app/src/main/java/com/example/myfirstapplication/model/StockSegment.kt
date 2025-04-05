@@ -1,4 +1,6 @@
 package com.example.myfirstapplication.model
 
-data class StockSegment(val low: Double, val open: Double, val close: Double, val high: Double) {
+import java.time.LocalDateTime
+
+data class StockSegment(val low: Double, val open: Double, val close: Double, val high: Double, val time: LocalDateTime) {
 }
