@@ -100,7 +100,7 @@ class HomeBrokerActivity() : ComponentActivity() {
                     .height(500.dp)
                     .padding(17.dp, 5.dp)
             ) {
-                HomeBrokerGraph()
+                HomeBrokerGraph(token)
             }
             BrokerBenefits()
         }

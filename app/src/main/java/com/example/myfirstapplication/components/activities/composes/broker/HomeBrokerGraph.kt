@@ -44,8 +44,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-inline fun HomeBrokerGraph(homeBrokerViewModel: HomeBrokerViewModel = koinInject()) {
-    val intr = homeBrokerViewModel.buscaToken("INTR")
+inline fun HomeBrokerGraph(token: String, homeBrokerViewModel: HomeBrokerViewModel = koinInject()) {
+    val intr = homeBrokerViewModel.buscaToken(token)
 
     val stockInfo by intr!!.collectAsState()
     val minimo by remember { mutableDoubleStateOf(stockInfo.calcularMinimo()) }
