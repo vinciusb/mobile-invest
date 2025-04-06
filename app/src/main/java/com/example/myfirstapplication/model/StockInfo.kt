@@ -20,7 +20,7 @@ data class StockInfo(val nome: String, val valores: List<StockSegment>) {
 
         fun geraStockAleatoria(nome: String, numeroSegmentos: Int, tendencia: Double): StockInfo {
             val base = Random.nextDouble(10.0, 100.0)
-            val startTime = LocalDateTime.of(2025, 4, 6, 0, 6, 10, 15)
+            val startTime = LocalDateTime.of(2025, 4, 6, 10, 6, 10, 15)
             val timeStep = Random.nextDouble(0.0, 20.0).toLong()
             val valores = List(numeroSegmentos) { i ->
                 generateRandomSegment(

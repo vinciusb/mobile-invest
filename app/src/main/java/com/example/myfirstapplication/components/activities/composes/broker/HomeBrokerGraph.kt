@@ -1,5 +1,9 @@
 package com.example.myfirstapplication.components.activities.composes.broker
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.EaseOutSine
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -16,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -23,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.example.myfirstapplication.components.activities.composes.drawer.pxToDp
 import com.example.myfirstapplication.components.activities.viewmodel.HomeBrokerViewModel
 import com.example.myfirstapplication.model.StockSegment
+import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 import java.time.Duration
 import java.time.LocalDateTime
@@ -40,18 +47,40 @@ import java.time.format.DateTimeFormatter
 inline fun HomeBrokerGraph(homeBrokerViewModel: HomeBrokerViewModel = koinInject()) {
     val intr = homeBrokerViewModel.buscaToken("INTR")
 
-    val state = intr!!.collectAsState()
-    val minimo by remember { mutableDoubleStateOf(state.value.calcularMinimo()) }
-    val maximo by remember { mutableDoubleStateOf(state.value.calcularMaximo()) }
-    val tempoInicio by remember { mutableStateOf(state.value.valores.first().time) }
-    val tempoFim by remember { mutableStateOf(state.value.valores.last().time) }
+    val stockInfo by intr!!.collectAsState()
+    val minimo by remember { mutableDoubleStateOf(stockInfo.calcularMinimo()) }
+    val maximo by remember { mutableDoubleStateOf(stockInfo.calcularMaximo()) }
+    val tempoInicio by remember { mutableStateOf(stockInfo.valores.first().time) }
+    val tempoFim by remember { mutableStateOf(stockInfo.valores.last().time) }
+
+    var animationStarted =
+        remember(stockInfo.valores.size) {
+            List(stockInfo.valores.size) {
+                mutableStateOf(false)
+            }
+        }
+
+    LaunchedEffect(intr) {
+        var idx = 0
+        while (idx < stockInfo.valores.size) {
+            animationStarted[idx].value = true
+            delay(40)
+            idx++
+        }
+    }
 
     Column {
         Row {
             Column(Modifier.weight(1f)) {
                 Row(Modifier.weight(1f)) {
-                    state.value.valores.forEach { segment ->
-                        CandlePoint(segment, minimo, maximo, Modifier.weight(1f))
+                    stockInfo.valores.forEachIndexed() { idx, segment ->
+                        CandlePoint(
+                            segment,
+                            minimo,
+                            maximo,
+                            animationStarted[idx].value,
+                            Modifier.weight(1f)
+                        )
                     }
                 }
                 XAxisTicks(tempoInicio, tempoFim, 3)
@@ -62,7 +91,13 @@ inline fun HomeBrokerGraph(homeBrokerViewModel: HomeBrokerViewModel = koinInject
 }
 
 @Composable
-inline fun CandlePoint(point: StockSegment, min: Double, max: Double, modifier: Modifier) {
+inline fun CandlePoint(
+    point: StockSegment,
+    min: Double,
+    max: Double,
+    isShowing: Boolean,
+    modifier: Modifier
+) {
     Column(
         modifier = modifier
             .fillMaxHeight()
@@ -75,7 +110,6 @@ inline fun CandlePoint(point: StockSegment, min: Double, max: Double, modifier: 
             val absoluteDiff = max - min
             val absoluteHigh = constraints.maxHeight.toFloat()
             val baseOffset = absoluteHigh * (max - point.high) / absoluteDiff
-//            val baseOffset = 0
 
             val roseUp = point.close > point.open
             val color = if (roseUp) Color(6, 179, 86, 255) else Color(243, 116, 92, 255)
@@ -95,22 +129,34 @@ inline fun CandlePoint(point: StockSegment, min: Double, max: Double, modifier: 
             val seccondThirdHeight = absoluteHigh * (upperMark - lowerMark) / absoluteDiff
             val lastThirdHeigt = absoluteHigh * (lowerMark - point.low) / absoluteDiff
 
+
+            val animatedAlpha by animateFloatAsState(
+                targetValue = if (isShowing) 1.0f else 0.0f,
+                animationSpec = tween(durationMillis = 1500, easing = EaseOutSine),
+            )
+            val animatedColor by animateColorAsState(
+                targetValue = if (isShowing) color else Color.Gray,
+                animationSpec = tween(durationMillis = 3000, easing = EaseOutSine),
+            )
+
             Surface(
-                color = color,
+                color = animatedColor,
                 modifier = Modifier
                     .width(2.dp)
                     .height(firstThirdHeight.toInt().pxToDp())
                     .offset(y = baseOffset.toInt().pxToDp())
+                    .alpha(animatedAlpha)
             ) { }
             Surface(
-                color = color,
+                color = animatedColor,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(seccondThirdHeight.toInt().pxToDp())
                     .offset(y = baseOffset.toInt().pxToDp() + firstThirdHeight.toInt().pxToDp())
+                    .alpha(animatedAlpha)
             ) { }
             Surface(
-                color = color,
+                color = animatedColor,
                 modifier = Modifier
                     .width(2.dp)
                     .height(lastThirdHeigt.toInt().pxToDp())
@@ -118,6 +164,7 @@ inline fun CandlePoint(point: StockSegment, min: Double, max: Double, modifier: 
                         y = baseOffset.toInt().pxToDp() + firstThirdHeight.toInt()
                             .pxToDp() + seccondThirdHeight.toInt().pxToDp()
                     )
+                    .alpha(animatedAlpha)
             ) { }
         }
     }

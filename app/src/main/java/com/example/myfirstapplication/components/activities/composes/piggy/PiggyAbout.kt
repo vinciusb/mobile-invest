@@ -21,23 +21,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myfirstapplication.model.PiggyAboutSectionDTO
+import com.example.myfirstapplication.model.AboutSectionDTO
 
 @Composable
 inline fun PiggyAbout() {
 
     val secoes = listOf(
-        PiggyAboutSectionDTO(
+        AboutSectionDTO(
             "Guardar automaticamente",
             "Faça render todo o dinheiro que você recebe e fica parado na sua conta.",
             "#/about-1"
         ),
-        PiggyAboutSectionDTO(
+        AboutSectionDTO(
             "Onde estou guardando",
             "Acesse sua carteira.",
             "#/about-2"
         ),
-        PiggyAboutSectionDTO(
+        AboutSectionDTO(
             "Comprar novo visual",
             "Compre aqui um visual deslumbrante para seu porquinho.",
             "#/about-3"
@@ -68,7 +68,7 @@ inline fun PiggyAbout() {
 }
 
 @Composable
-inline fun PiggyAboutSection(section: PiggyAboutSectionDTO) {
+inline fun PiggyAboutSection(section: AboutSectionDTO) {
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
